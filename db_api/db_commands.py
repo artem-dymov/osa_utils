@@ -118,7 +118,7 @@ async def get_all_groups_names(faculty: str) -> list[str]:
     return names
 
 
-async def get_all_groups_schedule_id(faculty: str) -> list[str]:
+async def get_all_groups_schedule_id(faculty: str) -> list[int]:
     groups: list[Group] = await Group_classes[faculty].query.gino.all()
     schedule_ids = []
     for i in groups:
@@ -139,7 +139,6 @@ async def is_group_in_db_legacy(faculty: str, group_name: str) -> bool:
 async def get_group_id_by_name(faculty: str, group_name: str) -> Group:
     groups = await get_all_groups_names(faculty)
     group_name = group_name.lower().strip()
-    group_index = None
     for i in groups:
         j = i.lower().strip()
         if group_name in j:
@@ -163,7 +162,11 @@ async def is_group_in_db(faculty: str, group_name: str) -> bool:
 
 
 async def get_group_by_name(faculty: str, group_name: str) -> Group:
-    group = await Group_classes[faculty].query.where(Group_classes[faculty].name == group_name).gino.first()
+    group_name = group_name.strip()
+    group = await Group_classes[faculty].query.where(
+        Group_classes[faculty].name == group_name.lower() or
+        Group_classes[faculty].name == group_name.upper()
+    ).gino.first()
     return group
 
 
@@ -184,19 +187,19 @@ async def is_teacher_in_db(faculty: str, full_name: str) -> bool:
     return False
 
 
-async def get_teacher_by_name(faculty: str, full_name: str):
+async def get_teacher_by_name(faculty: str, full_name: str) -> Teacher:
     teachers = await get_all_teachers(faculty)
     for teacher in teachers:
         if full_name.lower().strip() == teacher.full_name.lower().strip():
             return teacher
 
 
-async def add_group(faculty: str, name: str, schedule_id: str, teachers: list[dict]) -> None:
+async def add_group(faculty: str, name: str, schedule_id: Union[str, None], teachers: list[dict]) -> None:
     await Group_classes[faculty](schedule_id=schedule_id, name=name, teachers=teachers).create()
 
 
 async def update_group(faculty, schedule_id, **kwargs):
-    group: Group = get_group_by_schedule_id(faculty, schedule_id)
+    group: Group = await get_group_by_schedule_id(faculty, schedule_id)
     await group.update(**kwargs).apply()
 
 
@@ -206,7 +209,7 @@ async def update_teacher(faculty, schedule_id, full_name, type):
     return teacher
 
 
-async def search_teachers_by_name(faculty: str, full_name: str) -> list[str]:
+async def search_teachers_by_name(faculty: str, full_name: str) -> Union[list[str], None]:
     result = []
     for i in await get_all_teachers(faculty):
         if full_name.lower() in i.full_name.lower() and i.full_name not in result:
@@ -236,3 +239,12 @@ async def is_teacher_voted(user_id: int, teacher_id: int, faculty: str) -> bool:
         if teacher_id == vote.teacher_id and vote.user_id == user_id:
             return True
     return False
+
+
+async def delete_all_faculty_data(faculty):
+    await Group_classes[faculty].delete.gino.status()
+    await Teacher_classes[faculty].delete.gino.status()
+    await Vote_classes[faculty].delete.gino.status()
+
+
+
