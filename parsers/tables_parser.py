@@ -126,7 +126,7 @@ async def main():
                                 first_line = True
                                 for teacher_row in csv_reader_t:
                                     csv_teachers_rows.append(teacher_row)
-                                    if not first_line:
+                                    if (not first_line) and teacher_row[0] != '':
                                         if len(teacher_row) > 1:
                                             await db_commands.add_teacher(faculty, teacher_row[0].strip(),
                                                                           await type_determine(teacher_row[1]))
