@@ -209,7 +209,7 @@ async def update_teacher(faculty, schedule_id, full_name, type):
     return teacher
 
 
-async def search_teachers_by_name(faculty: str, full_name: str) -> Union[list[str], None]:
+async def search_teachers_by_name(faculty: str, full_name: str) -> Union[list[Teacher], None]:
     result = []
     for i in await get_all_teachers(faculty):
         if full_name.lower() in i.full_name.lower() and i.full_name not in result:
