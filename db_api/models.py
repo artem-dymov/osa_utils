@@ -87,4 +87,5 @@ class Question(db.Model):
     id = Column(INTEGER, Sequence("questions_id_seq"), primary_key=True)
     question_text = Column(TEXT)
     type = Column(TEXT)
+    answer_format = Column(TEXT)
 

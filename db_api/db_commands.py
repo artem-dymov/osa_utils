@@ -213,7 +213,7 @@ async def search_teachers_by_name(faculty: str, full_name: str) -> Union[list[Te
     result = []
     for i in await get_all_teachers(faculty):
         if full_name.lower() in i.full_name.lower() and i.full_name not in result:
-            result.append(i.full_name)
+            result.append(i)
 
     # if result is empty
     if not result:
@@ -247,4 +247,37 @@ async def delete_all_faculty_data(faculty):
     await Vote_classes[faculty].delete.gino.status()
 
 
+async def get_first_open_q() -> Question:
+    question = await Question.query.where(Question.type == 'open').gino.first()
+    return question
 
+
+async def get_question_types_by_id() -> dict[str: int]:
+    all_questions = await get_all_questions()
+    question_types_by_id = {
+        'lecture': [],
+        'practice': [],
+        'both': [],
+        'open': []
+    }
+
+    for question in all_questions:
+        match question.type:
+            case 'lecture':
+                question_types_by_id['lecture'].append(question.id)
+            case 'practice':
+                question_types_by_id['practice'].append(question.id)
+            case 'both':
+                question_types_by_id['both'].append(question.id)
+            case 'open':
+                question_types_by_id['open'].append(question.id)
+
+    return question_types_by_id
+
+
+# returns dict like {'both': [int, ...], 'lecture': [int, ...], 'practice': [int, ...]}
+# async def determine_questions_types() -> dict[str: int]:
+#     questions = await get_all_questions()
+#
+#     for question in questions:
+#         if
