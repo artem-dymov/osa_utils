@@ -8,7 +8,7 @@ photo_api/__pycache__/
 bot_log.log
 # C extensions
 *.so
-
+/osa_utils/
 # Distribution / packaging
 .Python
 build/
