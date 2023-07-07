@@ -2,12 +2,9 @@ import asyncio
 import os
 import sys
 
-os.chdir('../..')
-sys.path.append(os.getcwd())
-
-from utils.db_api import db_commands
+from osa_utils.db_api import db_commands
 from config import faculties, faculties_ukr
-from utils.db_api.database import create_db, drop_connection
+from osa_utils.db_api.database import create_db, drop_connection
 
 
 async def main():
@@ -23,7 +20,8 @@ async def main():
                 file_name = teacher_photo
                 teacher_photo = teacher_photo.split('.')
                 if teacher_photo.__len__() > 1:
-                    if teacher_photo[-1] == 'jpg' or teacher_photo[-1] == 'png':
+                    if teacher_photo[-1] == 'jpg' or teacher_photo[-1] == 'png' or \
+                            teacher_photo[-1] == 'jpeg' or teacher_photo[-1] == 'webp':
                         teacher_photo.pop()
 
                         full_name = ''
@@ -42,9 +40,29 @@ async def main():
                                 new_file_name = str(teacher.id) + '.jpg'
                                 os.rename(file_name, new_file_name)
                             else:
-                                answer = input(f'Програма не знайшла співпадіння для викладача - {full_name} - {faculty_ukr}.\n'
-                                               f'Нічого не пишіть і натисніть ENTER, щоб пропустити, або введіть'
-                                               f' id цього викладача в базі та натисніть ENTER.\n')
+                                suggest_text = ''
+                                suggest_list = {}
+                                suggest = await db_commands.search_teachers_by_name(faculty, full_name.split(' ')[0])
+                                if suggest:
+                                    if suggest.__len__() > 0:
+                                        suggest_list.update({suggest[0].id: suggest[0].full_name})
+                                        if suggest.__len__() > 1:
+                                            suggest_list.update({suggest[1].id: suggest[1].full_name})
+                                            if suggest.__len__() > 2:
+                                                suggest_list.update({suggest[2].id: suggest[2].full_name})
+
+                                    for id, name in suggest_list.items():
+                                        suggest_text += f'{id} --- {name}    '
+
+                                answer = input(
+                                    f'--------------------------------------------\n'
+                                    f'Програма не знайшла співпадіння для викладача - {full_name} - {faculty_ukr}.\n'
+                                    
+                                    f'Результати швидкого авто пошуку: {suggest_text}\n'
+                                    
+                                    f'Нічого не пишіть і натисніть ENTER, щоб пропустити, або введіть'
+                                    f' id цього викладача в базі та натисніть ENTER.\n')
+
 
                                 if answer.strip() == '':
                                     pass
@@ -60,4 +78,3 @@ async def main():
 
 
 asyncio.get_event_loop().run_until_complete(main())
-
