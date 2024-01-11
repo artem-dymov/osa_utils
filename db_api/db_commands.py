@@ -10,10 +10,7 @@ async def get_user_by_tg_id(tg_id: int) -> User:
 
 
 async def get_user(id: int) -> User:
-    user: User = await User.get(id)db_commands.py
-update
-7 months ago
-models.py
+    user: User = await User.get(id)
     return user
 
 
