@@ -1,7 +1,7 @@
 from osa_utils.db_api.models import User, Teacher, Teacher_classes, Vote, Vote_classes, Group, Group_classes, Question
 from config import faculties, faculties_ukr
 from typing import Union
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 
 async def get_user_by_tg_id(tg_id: int) -> User:
@@ -10,7 +10,10 @@ async def get_user_by_tg_id(tg_id: int) -> User:
 
 
 async def get_user(id: int) -> User:
-    user: User = await User.get(id)
+    user: User = await User.get(id)db_commands.py
+update
+7 months ago
+models.py
     return user
 
 
@@ -163,9 +166,12 @@ async def is_group_in_db(faculty: str, group_name: str) -> bool:
 
 async def get_group_by_name(faculty: str, group_name: str) -> Group:
     group_name = group_name.strip()
+    group_name = group_name.strip()
     group = await Group_classes[faculty].query.where(
-        Group_classes[faculty].name == group_name.lower() or
-        Group_classes[faculty].name == group_name.upper()
+        or_(
+            Group_classes[faculty].name == group_name.lower(),
+            Group_classes[faculty].name == group_name.upper()
+        )
     ).gino.first()
     return group
 
